@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SIMULATOR EXAMEN GAMI AUTO DRIVE</title>
+    <style>
+        :root {
+            --primary: #0f172a; --accent: #fbbf24; --success: #22c55e;
+            --danger: #ef4444; --bg: #020617; --card: #1e293b; --text: #f8fafc;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; color: var(--text); overflow-x: hidden; }
+        .hidden { display: none !important; }
+
+        /* LOGIN SCREEN */
+        .login-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
+        .login-card { background: var(--card); padding: 40px; border-radius: 24px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); animation: zoomIn 0.5s ease; }
+        .input-style { width: 100%; padding: 15px; margin-bottom: 15px; border: 2px solid #334155; border-radius: 12px; background: #0f172a; color: white; font-size: 16px; text-align: center; box-sizing: border-box; }
+
+        /* HEADER & STATS */
+        .header { background: var(--primary); padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #334155; }
+        .timer { font-size: 24px; font-weight: 900; color: var(--accent); }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); background: #0f172a; border-bottom: 1px solid #334155; text-align: center; }
+        .stat-item { padding: 10px; font-size: 11px; color: #94a3b8; border-right: 1px solid #1e293b; }
+        .stat-val { display: block; font-size: 18px; color: white; font-weight: 800; }
+
+        /* QUESTION AREA */
+        .exam-content { padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: calc(100vh - 180px); }
+        .q-card { background: var(--card); width: 100%; max-width: 800px; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); }
+        .img-container { width: 100%; margin-bottom: 20px; display: none; }
+        .has-image .img-container { display: block; }
+        .img-container img { width: 100%; border-radius: 12px; border: 1px solid #334155; }
+        .q-text { font-size: 20px; font-weight: 700; line-height: 1.4; margin-bottom: 25px; }
+
+        /* OPTIONS */
+        .options-list { width: 100%; display: grid; gap: 12px; }
+        .opt-btn { padding: 18px; border: 2px solid #334155; border-radius: 14px; background: #0f172a; color: white; cursor: pointer; text-align: left; font-size: 16px; transition: 0.2s; }
+        .opt-btn.active { border-color: var(--accent); background: #1e293b; }
+        .opt-btn.correct { background: var(--success) !important; border-color: #166534 !important; color: white; font-weight: bold; }
+        .opt-btn.wrong { background: var(--danger) !important; border-color: #991b1b !important; color: white; animation: shake 0.4s ease; }
+
+        /* FOOTER */
+        .footer { position: fixed; bottom: 0; width: 100%; background: var(--primary); padding: 15px; display: flex; gap: 10px; box-sizing: border-box; border-top: 1px solid #334155; }
+        .btn { padding: 16px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; flex: 1; text-transform: uppercase; font-size: 14px; }
+        .btn-confirm { background: var(--accent); color: black; }
+        .btn-later { background: #334155; color: white; }
+        .btn-abandon { background: #1e293b; color: var(--danger); flex: 0.6; }
+
+        /* ANIMATIONS */
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 75% { transform: translateX(-8px); } }
+
+        /* ADMIN */
+        .admin-panel { max-width: 900px; margin: 30px auto; padding: 20px; }
+        .admin-card { background: var(--card); padding: 25px; border-radius: 20px; border-left: 6px solid var(--accent); margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+<div id="screen-login" class="login-screen">
+    <div class="login-card">
+        <h1 style="color:var(--accent); margin-top:0; font-size: 24px;">SIMULATOR EXAMEN<br>GAMI AUTO DRIVE</h1>
+        <input type="text" id="stu-name" class="input-style" placeholder="Nume Complet Cursant">
+        <input type="password" id="stu-code" class="input-style" placeholder="****">
+        <button class="btn btn-confirm" style="width:100%" onclick="auth()">START EXAMEN</button>
+    </div>
+</div>
+
+<div id="screen-exam" class="hidden">
+    <div class="header">
+        <div id="user-tag" style="font-weight:bold;">Cursant: -</div>
+        <div id="timer" class="timer">30:00</div>
+    </div>
+    <div class="stats-grid">
+        <div class="stat-item">RĂMASE <span class="stat-val" id="s-rem">26</span></div>
+        <div class="stat-item" style="color:var(--success)">COR. <span class="stat-val" id="s-cor">0</span></div>
+        <div class="stat-item" style="color:var(--danger)">GRE. <span class="stat-val" id="s-gre">0</span></div>
+        <div class="stat-item">SCOR <span class="stat-val" id="s-perc">0%</span></div>
+    </div>
+    <div class="exam-content">
+        <div class="q-card" id="q-container">
+            <div class="img-container" id="img-wrap"></div>
+            <div class="q-text" id="q-text"></div>
+            <div class="options-list" id="opts-list"></div>
+        </div>
+    </div>
+    <div class="footer">
+        <button class="btn btn-abandon" onclick="location.reload()">ABANDON</button>
+        <button class="btn btn-later" id="btn-later" onclick="later()">TÂRZIU</button>
+        <button class="btn btn-confirm" id="btn-main" onclick="handleAction()">CONFIRMĂ</button>
+    </div>
+</div>
+
+<div id="screen-admin" class="hidden admin-panel">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 style="font-size: 18px;">ADMIN GAMI AUTO DRIVE</h2>
+        <button class="btn btn-later" onclick="location.reload()" style="flex:none; padding:10px 20px">IEȘIRE</button>
+    </div>
+    <div class="admin-card">
+        <h4>GENERATOR ÎNTREBĂRI</h4>
+        <input type="text" id="adm-q" class="input-style" style="text-align:left" placeholder="Întrebare">
+        <input type="text" id="adm-a" class="input-style" placeholder="Varianta A">
+        <input type="text" id="adm-b" class="input-style" placeholder="Varianta B">
+        <input type="text" id="adm-c" class="input-style" placeholder="Varianta C">
+        <input type="text" id="adm-ans" class="input-style" placeholder="Răspuns (Ex: ABC)">
+        <input type="file" id="adm-img" class="input-style" accept="image/jpeg">
+        <button class="btn btn-confirm" style="width:100%" onclick="gen()">GENEREAZĂ COD & COPIAZĂ</button>
+        <pre id="admin-code-out" style="background:#000; color:#0f0; padding:15px; margin-top:10px; display:none; white-space:pre-wrap; font-size:10px;"></pre>
+    </div>
+    <div class="admin-card" id="admin-results">
+        <h4>DOSARE ELEVI</h4>
+        <div id="results-list"></div>
+    </div>
+</div>
+
+<script>
+// --- CAPITOLE (Aici rămân cele 26 de întrebări amestecabile) ---
+const cat_Mecanica = [
+    { q: "Ce indică fumul albastru scos de eșapament?", a: "Consum excesiv de ulei", b: "Amestec prea bogat", c: "Lipsă lichid răcire", ans: "A", img: "" },
+    { q: "Bateria de acumulatori se poate descărca dacă:", a: "Cureaua alternatorului este slabă", b: "Folosiți claxonul des", c: "Motorul stă la relanti", ans: "A", img: "" }
+];
+const cat_Infractiuni = [
+    { q: "Conducerea unui vehicul neînmatriculat constituie:", a: "Contravenție", b: "Infracțiune", c: "Eroare administrativă", ans: "B", img: "" },
+    { q: "Părăsirea locului accidentului cu victime constituie:", a: "Contravenție gravă", b: "Infracțiune", c: "Nu este pedepsit dacă anunți ulterior", ans: "B", img: "" }
+];
+const cat_Contraventii = [
+    { q: "Nerespectarea culorii roșii a semaforului constituie:", a: "Infracțiune", b: "Contravenție", c: "Nu se pedepsește", ans: "B", img: "" },
+    { q: "Nepurtarea centurii de siguranță se sancționează cu:", a: "Amandă și puncte de penalizare", b: "Suspendarea permisului", c: "Închisoare", ans: "A", img: "" }
+];
+const cat_Imagine = [
+    { q: "Ce semnificație are acest indicator?", a: "Depășirea interzisă", b: "Oprirea interzisă", c: "Accesul interzis", ans: "B", img: "https://upload.wikimedia.org" },
+    { q: "Brațul ridicat vertical al polițistului semnifică:", a: "Atenție, oprire", b: "Măriți viteza", c: "Virați la stânga", ans: "A", img: "https://via.placeholder.com" },
+    { q: "Cum veți proceda în această situație?", a: "Opriți la linie", b: "Reduceți viteza", c: "Acordați prioritate de dreapta", ans: "A", img: "https://upload.wikimedia.org" },
+    { q: "Acest indicator vă avertizează că urmează:", a: "O curbă la stânga", b: "O curbă la dreapta", c: "Drum lunecos", ans: "B", img: "https://upload.wikimedia.org" },
+    { q: "Ce indică panoul adițional din imagine?", a: "Distanța până la obiectiv", b: "Direcția drumului prioritar", c: "Începutul zonei de acțiune", ans: "B", img: "https://upload.wikimedia.org" },
+    { q: "Care este ordinea de trecere în intersecție?", a: "Autoturism, Camion, Tramvai", b: "Camion, Autoturism, Tramvai", c: "Tramvai, Camion, Autoturism", ans: "C", img: "https://via.placeholder.com" },
+    { q: "Ce semnifică lumina roșie a semaforului?", a: "Oprire obligatorie", b: "Treceți cu atenție", c: "Permite virajul la dreapta", ans: "A", img: "https://via.placeholder.com" },
+    { q: "Indicatorul din imagine interzice:", a: "Întoarcerea", b: "Mersul înapoi", c: "Depășirea", ans: "A", img: "https://upload.wikimedia.org" },
+    { q: "Cum trebuie să circulați pe acest sector de drum?", a: "Cu maxim 30 km/h", b: "Cu minim 50 km/h", c: "Fără restricții", ans: "A", img: "https://via.placeholder.com" },
+    { q: "Ce semnifică marcajul continuu din imagine?", a: "Permite depășirea", b: "Interzice încălcarea acestuia", c: "Delimitează banda de urgență", ans: "B", img: "https://via.placeholder.com" }
+];
+const cat_Legislatie = [
+    { q: "Viteza maximă pe autostradă este de:", a: "100 km/h", b: "130 km/h", c: "120 km/h", ans: "B", img: "" },
+    { q: "Prioritatea de dreapta se aplică în:", a: "Intersecții nedirijate", b: "Toate intersecțiile", c: "Sens giratoriu", ans: "A", img: "" },
+    { q: "Este interzisă întoarcerea: (3 Răspunsuri)", a: "Pe treceri pietoni", b: "Pe poduri", c: "În tuneluri", ans: "ABC", img: "" },
+    { q: "Distanta de semnalizare în localitate este de:", a: "50m", b: "100m", c: "25m", ans: "A", img: "" },
+    { q: "În sensul giratoriu au prioritate:", a: "Cei care intră", b: "Cei care circulă în interior", c: "Autobuzele", ans: "B", img: "" },
+    { q: "Utilizarea telefonului fără hands-free este:", a: "Interzisă", b: "Permisă la semafor", c: "Permisă oricând", ans: "A", img: "" },
+    { q: "Cum se acordă primul ajutor? (2 Răspunsuri)", a: "Nu mișcăm victima", b: "Eliberăm căile respiratorii", c: "Dăm apă victimei", ans: "AB", img: "" },
+    { q: "Schimbarea direcției de mers necesită:", a: "Semnalizare", b: "Asigurare", c: "Reducerea vitezei", ans: "ABC", img: "" },
+    { q: "Depășirea se efectuează pe partea:", a: "Dreaptă", b: "Stângă", c: "Ambele", ans: "B", img: "" },
+    { q: "Consumul de alcool la volan peste 0.80 g/l în sânge este:", a: "Infracțiune", b: "Contravenție", c: "Permis", ans: "A", img: "" }
+];
+
+let questions = [], currentIdx = 0, score = {c:0, g:0}, timeLeft = 1800, timer, isChecking = false, user = "";
+
+function auth() {
+    const n = document.getElementById('stu-name').value;
+    const c = document.getElementById('stu-code').value;
+    if(c === "1234" && n) { user = n; startExam(); }
+    else if(c === "9999") showAdmin();
+    else alert("Acces Respins! Date incorecte.");
+}
+
+function startExam() {
+    const shuffle = (arr) => arr.sort(() => 0.5 - Math.random());
+    questions = [
+        ...shuffle(cat_Mecanica).slice(0, 2),
+        ...shuffle(cat_Infractiuni).slice(0, 2),
+        ...shuffle(cat_Contraventii).slice(0, 2),
+        ...shuffle(cat_Imagine).slice(0, 10),
+        ...shuffle(cat_Legislatie).slice(0, 10)
+    ];
+    shuffle(questions);
+    document.getElementById('screen-login').classList.add('hidden');
+    document.getElementById('screen-exam').classList.remove('hidden');
+    document.getElementById('user-tag').innerHTML = `<b>${user}</b>`;
+    timer = setInterval(tick, 1000);
+    render();
+}
+
+function tick() {
+    timeLeft--;
+    let m = Math.floor(timeLeft/60), s = timeLeft%60;
+    document.getElementById('timer').innerText = `${m}:${s<10?'0':''}${s}`;
+    if(timeLeft <= 0) location.reload();
+}
+
+function render() {
+    isChecking = false;
+    const q = questions[currentIdx];
+    document.getElementById('q-text').innerText = q.q;
+    document.getElementById('s-rem').innerText = questions.length;
+    document.getElementById('btn-main').innerText = "Confirmă";
+    document.getElementById('btn-later').style.display = "block";
+    const container = document.getElementById('q-container');
+    if(q.img) { container.classList.add('has-image'); document.getElementById('img-wrap').innerHTML = `<img src="${q.img}">`; }
+    else { container.classList.remove('has-image'); document.getElementById('img-wrap').innerHTML = ""; }
+    const area = document.getElementById('opts-list');
+    area.innerHTML = '';
+    ['A','B','C'].forEach(l => {
+        if(q[l.toLowerCase()]) {
+            const b = document.createElement('button');
+            b.className = 'opt-btn';
+            b.innerHTML = `<b>${l}:</b> ${q[l.toLowerCase()]}`;
+            b.onclick = () => { if(!isChecking) b.classList.toggle('active'); };
+            b.dataset.val = l;
+            area.appendChild(b);
+        }
+    });
+}
+
+function handleAction() { if(!isChecking) check(); else next(); }
+
+function check() {
+    const q = questions[currentIdx];
+    const sel = Array.from(document.querySelectorAll('.opt-btn.active')).map(b => b.dataset.val).sort().join('');
+    if(!sel) return;
+    isChecking = true;
+    document.querySelectorAll('.opt-btn').forEach(b => {
+        if(q.ans.includes(b.dataset.val)) b.classList.add('correct');
+        else if(b.classList.contains('active')) b.classList.add('wrong');
+    });
+    if(sel === q.ans.split('').sort().join('')) { score.c++; } 
+    else { score.g++; if(window.navigator.vibrate) window.navigator.vibrate(200); }
+    document.getElementById('s-cor').innerText = score.c;
+    document.getElementById('s-gre').innerText = score.g;
+    document.getElementById('s-perc').innerText = Math.round((score.c/26)*100) + "%";
+    document.getElementById('btn-main').innerText = "Următoarea";
+    document.getElementById('btn-later').style.display = "none";
+    if(score.g >= 5) { alert("RESPINS!"); location.reload(); }
+}
+
+function next() {
+    questions.splice(currentIdx, 1);
+    if(questions.length === 0) { alert("Final! Scor: " + score.c + "/26"); location.reload(); }
+    if(currentIdx >= questions.length) currentIdx = 0;
+    render();
+}
+
+function later() {
+    const item = questions.splice(currentIdx, 1);
+    questions.push(item);
+    render();
+}
+
+function showAdmin() {
+    document.getElementById('screen-login').classList.add('hidden');
+    document.getElementById('screen-admin').classList.remove('hidden');
+}
+
+function gen() {
+    const q = document.getElementById('adm-q').value, a = document.getElementById('adm-a').value, b = document.getElementById('adm-b').value, c = document.getElementById('adm-c').value, ans = document.getElementById('adm-ans').value.toUpperCase(), f = document.getElementById('adm-img').files;
+    const process = (img = "") => {
+        const code = JSON.stringify({q, a, b, c, ans, img}, null, 4) + ",";
+        document.getElementById('admin-code-out').style.display = "block";
+        document.getElementById('admin-code-out').innerText = code;
+        navigator.clipboard.writeText(code);
+        alert("Cod Copiat!");
+    };
+    if(f) { let r = new FileReader(); r.onload = (e) => process(e.target.result); r.readAsDataURL(f); }
+    else process("");
+}
+</script>
+</body>
+</html>
