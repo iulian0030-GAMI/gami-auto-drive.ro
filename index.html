@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SIMULATOR EXAMEN GAMI AUTO DRIVE</title>
+    <title>GAMI AUTO DRIVE - SISTEM COMPLET PRO</title>
     <style>
         :root {
             --primary: #0f172a; --accent: #fbbf24; --success: #22c55e;
@@ -11,218 +11,219 @@
         }
         body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; color: var(--text); overflow-x: hidden; }
         .hidden { display: none !important; }
-
         .login-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
-        .login-card { background: var(--card); padding: 40px; border-radius: 24px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); }
-        .input-style { width: 100%; padding: 15px; margin-bottom: 15px; border: 2px solid #334155; border-radius: 12px; background: #0f172a; color: white; font-size: 16px; text-align: center; box-sizing: border-box; }
-
-        .header { background: var(--primary); padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #334155; }
-        .timer { font-size: 24px; font-weight: 900; color: var(--accent); }
+        .login-card { background: var(--card); padding: 40px; border-radius: 24px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .input-style { width: 100%; padding: 15px; margin-bottom: 15px; border: 2px solid #334155; border-radius: 12px; background: #0f172a; color: white; text-align: center; box-sizing: border-box; font-size: 16px; }
+        .header { background: var(--primary); padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; position: sticky; top: 0; z-index: 100; }
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); background: #0f172a; border-bottom: 1px solid #334155; text-align: center; }
-        .stat-item { padding: 10px; font-size: 11px; color: #94a3b8; border-right: 1px solid #1e293b; }
         .stat-val { display: block; font-size: 18px; color: white; font-weight: 800; }
-
-        .exam-content { padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: calc(100vh - 180px); }
-        .q-card { background: var(--card); width: 100%; max-width: 800px; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); text-align: center; }
-        
+        .q-card { background: var(--card); width: 90%; max-width: 800px; padding: 25px; border-radius: 20px; margin: 20px auto; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .img-container { width: 100%; margin-bottom: 20px; display: none; }
-        .has-image .img-container { display: block; }
-        .img-container img { width: 80%; max-width: 320px; border-radius: 12px; border: 1px solid #334155; }
-
-        .q-text { font-size: 21px; font-weight: 700; line-height: 1.4; margin-bottom: 25px; }
-        .options-list { width: 100%; display: grid; gap: 12px; }
-        .opt-btn { padding: 18px; border: 2px solid #334155; border-radius: 14px; background: #0f172a; color: white; cursor: pointer; text-align: left; font-size: 17px; transition: 0.2s; }
-        .opt-btn.active { border-color: var(--accent); background: #1e293b; }
+        .img-container img { max-width: 100%; max-height: 250px; border-radius: 12px; border: 2px solid #334155; }
+        .opt-btn { width: 100%; padding: 18px; margin-bottom: 10px; border: 2px solid #334155; border-radius: 14px; background: #0f172a; color: white; cursor: pointer; text-align: left; font-size: 16px; transition: 0.2s; }
+        .opt-btn.selected { border-color: var(--accent); background: #1e293b; }
         .opt-btn.correct { background: var(--success) !important; border-color: #166534 !important; color: white; font-weight: bold; }
-        .opt-btn.wrong { background: var(--danger) !important; border-color: #991b1b !important; color: white; animation: shake 0.4s ease; }
-
-        .footer { position: fixed; bottom: 0; width: 100%; background: var(--primary); padding: 15px; display: flex; gap: 10px; box-sizing: border-box; border-top: 1px solid #334155; }
-        .btn { padding: 16px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; flex: 1; text-transform: uppercase; font-size: 14px; }
+        .opt-btn.wrong { background: var(--danger) !important; border-color: #991b1b !important; color: white; }
+        .footer { position: fixed; bottom: 0; width: 100%; background: var(--primary); padding: 15px; display: flex; gap: 10px; box-sizing: border-box; }
+        .btn { padding: 16px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; flex: 1; text-transform: uppercase; font-size: 13px; }
         .btn-confirm { background: var(--accent); color: black; }
-        .btn-later { background: #334155; color: white; }
-        .btn-abandon { background: #1e293b; color: var(--danger); flex: 0.6; }
-
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 75% { transform: translateX(-8px); } }
+        .admin-card-group { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; border-top: 4px solid var(--accent); }
+        .stats-circle { width: 70px; height: 70px; border-radius: 50%; border: 5px solid #1e293b; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; margin-left: auto; border-top-color: var(--success); }
     </style>
 </head>
 <body>
 
 <div id="screen-login" class="login-screen">
     <div class="login-card">
-        <h1 style="color:var(--accent); margin-top:0; font-size: 22px;">SIMULATOR EXAMEN<br>GAMI AUTO DRIVE</h1>
-        <input type="text" id="stu-name" class="input-style" placeholder="Nume Complet Cursant">
-        <input type="password" id="stu-code" class="input-style" placeholder="****">
-        <button class="btn btn-confirm" style="width:100%" onclick="auth()">START EXAMEN</button>
+        <h1 style="color:var(--accent)">GAMI AUTO DRIVE</h1>
+        <input type="text" id="stu-name" placeholder="Nume Cursant / ID Card" class="input-style">
+        <input type="password" id="stu-code" placeholder="****" class="input-style">
+        <button class="btn btn-confirm" style="width:100%" onclick="auth()">CONECTARE</button>
     </div>
 </div>
 
 <div id="screen-exam" class="hidden">
     <div class="header">
         <div id="user-tag" style="font-weight:bold;">Cursant: -</div>
-        <div id="timer" class="timer">30:00</div>
+        <div id="timer" style="color:var(--accent); font-weight:900;">30:00</div>
     </div>
     <div class="stats-grid">
-        <div class="stat-item">RĂMASE <span class="stat-val" id="s-rem">26</span></div>
-        <div class="stat-item" style="color:var(--success)">COR. <span class="stat-val" id="s-cor">0</span></div>
-        <div class="stat-item" style="color:var(--danger)">GRE. <span class="stat-val" id="s-gre">0</span></div>
-        <div class="stat-item">SCOR <span class="stat-val" id="s-perc">0%</span></div>
+        <div style="padding:10px;">RĂMASE <span class="stat-val" id="s-rem">26</span></div>
+        <div style="padding:10px; color:var(--success)">COR. <span class="stat-val" id="s-cor">0</span></div>
+        <div style="padding:10px; color:var(--danger)">GRE. <span class="stat-val" id="s-gre">0</span></div>
+        <div style="padding:10px;">SCOR <span class="stat-val" id="s-perc">0%</span></div>
     </div>
-    <div class="exam-content">
-        <div class="q-card" id="q-container">
-            <div class="img-container" id="img-wrap"></div>
-            <div class="q-text" id="q-text"></div>
-            <div class="options-list" id="opts-list"></div>
-        </div>
+    <div class="q-card">
+        <div id="img-wrap" class="img-container"></div>
+        <div id="q-text" style="font-size:20px; font-weight:bold; margin-bottom:20px;"></div>
+        <div id="opts-list"></div>
     </div>
     <div class="footer">
-        <button class="btn btn-abandon" onclick="location.reload()">ABANDON</button>
-        <button class="btn btn-later" id="btn-later" onclick="later()">TÂRZIU</button>
+        <button class="btn" style="background:#1e293b; color:var(--danger); flex:0.6;" onclick="location.reload()">ABANDON</button>
+        <button class="btn" style="background:#334155; color:white;" onclick="later()">MAI TÂRZIU</button>
         <button class="btn btn-confirm" id="btn-main" onclick="handleAction()">CONFIRMĂ</button>
     </div>
 </div>
 
+<div id="screen-admin" class="hidden" style="padding:20px; padding-bottom:100px;">
+    <h2 style="color:var(--accent); text-align:center;">📊 MONITORIZARE GRUPATĂ</h2>
+    <div id="admin-grouped-content"></div>
+    <hr style="border: 0.5px solid #334155; margin: 30px 0;">
+    <h3 style="color:var(--accent)">➕ ADĂUGARE ÎNTREBĂRI NOI</h3>
+    <input type="text" id="adm-q" placeholder="Text întrebare" class="input-style">
+    <input type="text" id="adm-a" placeholder="Varianta A" class="input-style">
+    <input type="text" id="adm-b" placeholder="Varianta B" class="input-style">
+    <input type="text" id="adm-c" placeholder="Varianta C" class="input-style">
+    <input type="text" id="adm-ans" placeholder="Răspuns (ex: A, AC, ABC)" class="input-style">
+    <button class="btn btn-confirm" onclick="saveExtraQ()">GENEREAZĂ COD & DESCARCĂ</button>
+    <button class="btn btn-confirm" style="position:fixed; bottom:20px; left:5%; width:90%; z-index:1000;" onclick="location.reload()">IEȘIRE ADMIN</button>
+</div>
+
 <script>
-// CAPITOLE STABILITE
-const cat_Mecanica = [
+const initialPool = [
     { q: "Ce indică fumul albastru scos de eșapament?", a: "Consum excesiv de ulei", b: "Amestec prea bogat", c: "Lipsă lichid răcire", ans: "A", img: "" },
-    { q: "Bateria de acumulatori se poate descărca dacă:", a: "Cureaua alternatorului este slabă", b: "Folosiți claxonul des", c: "Motorul stă la relanti", ans: "A", img: "" }
-];
-const cat_Infractiuni = [
-    { q: "Conducerea unui vehicul neînmatriculat constituie:", a: "Contravenție", b: "Infracțiune", c: "Eroare administrativă", ans: "B", img: "" },
-    { q: "Părăsirea locului accidentului cu victime constituie:", a: "Contravenție gravă", b: "Infracțiune", c: "Eroare de procedură", ans: "B", img: "" }
-];
-const cat_Contraventii = [
-    { q: "Nerespectarea culorii roșii a semaforului constituie:", a: "Infracțiune", b: "Contravenție", c: "Nu se pedepsește", ans: "B", img: "" },
-    { q: "Nepurtarea centurii de siguranță se sancționează cu:", a: "Amandă și puncte de penalizare", b: "Suspendarea permisului", c: "Închisoare", ans: "A", img: "" }
-];
-const cat_Imagine = [
+    { q: "Brațul ridicat vertical al polițistului semnifică:", a: "Atenție, oprire", b: "Măriți viteza", c: "Virați la stânga", ans: "A", img: "https://www.odat.ro" },
     { q: "Ce semnificație are acest indicator?", a: "Depășirea interzisă", b: "Oprirea interzisă", c: "Accesul interzis", ans: "B", img: "https://upload.wikimedia.org" },
-    { q: "Brațul ridicat vertical al polițistului semnifică:", a: "Atenție, oprire", b: "Măriți viteza", c: "Virați la stânga", ans: "A", img: "https://via.placeholder.com" },
     { q: "Cum veți proceda în această situație?", a: "Opriți la linie", b: "Reduceți viteza", c: "Acordați prioritate de dreapta", ans: "A", img: "https://upload.wikimedia.org" },
     { q: "Acest indicator vă avertizează că urmează:", a: "O curbă la stânga", b: "O curbă la dreapta", c: "Drum lunecos", ans: "B", img: "https://upload.wikimedia.org" },
-    { q: "Ce indică panoul adițional din imagine?", a: "Distanța până la obiectiv", b: "Direcția drumului prioritar", c: "Începutul zonei de acțiune", ans: "B", img: "https://upload.wikimedia.org" },
-    { q: "Care este ordinea de trecere în intersecție?", a: "Autoturism, Camion, Tramvai", b: "Camion, Autoturism, Tramvai", c: "Tramvai, Camion, Autoturism", ans: "C", img: "https://via.placeholder.com" },
-    { q: "Ce semnifică lumina roșie a semaforului?", a: "Oprire obligatorie", b: "Treceți cu atenție", c: "Permite virajul la dreapta", ans: "A", img: "https://via.placeholder.com" },
-    { q: "Indicatorul din imagine interzice:", a: "Întoarcerea", b: "Mersul înapoi", c: "Depășirea", ans: "A", img: "https://upload.wikimedia.org" },
-    { q: "Cum trebuie să circulați pe acest sector de drum?", a: "Cu maxim 30 km/h", b: "Cu minim 50 km/h", c: "Fără restricții", ans: "A", img: "https://via.placeholder.com" },
-    { q: "Ce semnifică marcajul continuu din imagine?", a: "Permite depășirea", b: "Interzice încălcarea acestuia", c: "Delimitează banda de urgență", ans: "B", img: "https://via.placeholder.com" }
-];
-const cat_Legislatie = [
-    { q: "Viteza maximă pe autostradă este de:", a: "100 km/h", b: "130 km/h", c: "120 km/h", ans: "B", img: "" },
-    { q: "Prioritatea de dreapta se aplică în:", a: "Intersecții nedirijate", b: "Toate intersecțiile", c: "Sens giratoriu", ans: "A", img: "" },
-    { q: "Este interzisă întoarcerea:", a: "Pe treceri pietoni", b: "Pe poduri", c: "În tuneluri", ans: "ABC", img: "" },
-    { q: "Distanta de semnalizare în localitate este de:", a: "50m", b: "100m", c: "25m", ans: "A", img: "" },
-    { q: "În sensul giratoriu au prioritate:", a: "Cei care intră", b: "Cei care circulă în interior", c: "Autobuzele", ans: "B", img: "" },
-    { q: "Utilizarea telefonului fără hands-free este:", a: "Interzisă", b: "Permisă la semafor", c: "Permisă oricând", ans: "A", img: "" },
-    { q: "Cum se acordă primul ajutor?", a: "Nu mișcăm victima", b: "Eliberăm căile respiratorii", c: "Dăm apă victimei", ans: "AB", img: "" },
-    { q: "Schimbarea direcției de mers necesită:", a: "Semnalizare", b: "Asigurare", c: "Reducerea vitezei", ans: "ABC", img: "" },
-    { q: "Depășirea se efectuează pe partea:", a: "Dreaptă", b: "Stângă", c: "Ambele", ans: "B", img: "" },
-    { q: "Consumul de alcool la volan peste 0.80 g/l în sânge este:", a: "Infracțiune", b: "Contravenție", c: "Permis", ans: "A", img: "" }
+    { q: "Ce indică panoul adițional din imagine?", a: "Distanța până la obiectiv", b: "Direcția drumului prioritar", c: "Începutul zonei de acțiune", ans: "B", img: "https://i0.wp.com" },
+    { q: "Care este ordinea de trecere în intersecție?", a: "Autoturism, Camion, Tramvai", b: "Camion, Autoturism, Tramvai", c: "Tramvai, Camion, Autoturism", ans: "C", img: "https://encrypted-tbn0.gstatic.com" },
+    { q: "Ce semnifică lumina roșie a semaforului?", a: "Oprire obligatorie", b: "Treceți cu atenție", c: "Permite virajul la dreapta", ans: "A", img: "https://upload.wikimedia.org" },
+    { q: "Indicatorul din imagine interzice:", a: "Întoarcerea", b: "Depășirea", c: "Accesul", ans: "A", img: "https://upload.wikimedia.org" },
+    { q: "Unde este interzisă întoarcerea vehiculului?", a: "Pe drumurile județene", b: "În locurile unde oprirea este interzisă", c: "În intersecții", ans: "B", img: "" },
+    { q: "Infracțiunea de conducere sub influența alcoolului:", a: "Peste 0.80 g/l", b: "Doar cu amendă", c: "Dosar penal", ans: "AC", img: "" },
+    { q: "Măsuri la accident cu victime:", a: "Anunțarea la 112", b: "Nu se modifică poziția mașinii", c: "Prim ajutor", ans: "ABC", img: "" },
+    { q: "Viteza maximă în localități:", a: "50 km/h", b: "60 km/h", c: "40 km/h", ans: "A", img: "" },
+    { q: "Prioritate în sens giratoriu:", a: "Cei care intră", b: "Cei din interior", c: "Nimeni", ans: "B", img: "" },
+    { q: "Întoarcerea pe autostradă:", a: "Permisă", b: "Strict interzisă", c: "Când e liber", ans: "B", img: "" },
+    { q: "Interzisă depășirea:", a: "Pe treceri pietoni", b: "În stații", c: "Lângă calea ferată", ans: "AC", img: "" },
+    { q: "Martor bord albastru?", a: "Faza lungă", b: "Ulei", c: "Uși deschise", ans: "A", img: "" },
+    { q: "Fum negru eșapament?", a: "Consum combustibil", b: "Ulei", c: "Defecțiune răcire", ans: "A", img: "" },
+    { q: "Calea ferată fără bariere:", a: "Reduceți viteza", b: "Opriți obligatoriu", c: "Vă asigurați", ans: "BC", img: "" },
+    { q: "Centura este obligatorie:", a: "Doar afară", b: "Toți ocupanții", c: "Doar șofer", ans: "B", img: "" },
+    { q: "Permisul B sub:", a: "3500 kg", b: "5000 kg", c: "7500 kg", ans: "A", img: "" },
+    { q: "Ce verificați la direcție?", a: "Joc volan", b: "Antigel", c: "Presiune", ans: "A", img: "" },
+    { q: "Semnalizare depășire afară:", a: "Lumină și claxon", b: "Doar lumini", c: "Claxon", ans: "A", img: "" },
+    { q: "Galben intermitent:", a: "Treci cu atenție", b: "Oprești", c: "Mărești viteza", ans: "A", img: "" },
+    { q: "Bateria se poate descărca dacă:", a: "Cureaua alternatorului este slabă", b: "Folosiți claxonul des", c: "Motorul stă la relanti", ans: "A", img: "" },
+    { q: "Fum albastru:", a: "Consum ulei", b: "Garnitură chiulasă", c: "Amestec bogat", ans: "A", img: "" },
+    { q: "Indicator cerc roșu, bară albă:", a: "Accesul interzis", b: "Oprirea interzisă", c: "Depășirea interzisă", ans: "A", img: "" },
+    { q: "Cedează trecerea:", a: "Triunghi cu vârful în jos", b: "Triunghi cu vârful în sus", c: "Pătrat albastru", ans: "A", img: "" },
+    { q: "Viteza 30km/h localitate:", a: "La școli", b: "Intersecții nedirijate", c: "Poduri", ans: "AB", img: "" },
+    { q: "Când se schimbă uleiul?", a: "Conform manualului", b: "Anual", c: "La 1000km", ans: "A", img: "" }
 ];
 
-let questions = [], currentIdx = 0, score = {c:0, g:0}, timeLeft = 1800, timer, isChecking = false, user = "";
+let cor = 0, gre = 0, sel = [], examHistory = [], timer, studentName = "", activePool = [], isPaused = false;
+
+function shuffle(array) { return array.sort(() => Math.random() - 0.5); }
 
 function auth() {
-    const n = document.getElementById('stu-name').value;
-    const c = document.getElementById('stu-code').value;
-    if(c === "1234" && n) { user = n; startExam(); }
-    else alert("Acces Respins!");
-}
-
-function startExam() {
-    const shuffle = (arr) => arr.sort(() => 0.5 - Math.random());
-    questions = [
-        ...shuffle(cat_Mecanica).slice(0, 2),
-        ...shuffle(cat_Infractiuni).slice(0, 2),
-        ...shuffle(cat_Contraventii).slice(0, 2),
-        ...shuffle(cat_Imagine).slice(0, 10),
-        ...shuffle(cat_Legislatie).slice(0, 10)
-    ];
-    shuffle(questions);
+    const code = document.getElementById('stu-code').value;
+    const name = document.getElementById('stu-name').value;
+    if(code === "999") { showAdmin(); return; }
+    if(!name) return alert("Nume!");
+    studentName = name; activePool = shuffle([...initialPool]).slice(0, 26);
+    document.getElementById('user-tag').innerText = "Cursant: " + name;
     document.getElementById('screen-login').classList.add('hidden');
     document.getElementById('screen-exam').classList.remove('hidden');
-    document.getElementById('user-tag').innerHTML = `<b>${user}</b>`;
-    timer = setInterval(tick, 1000);
-    render();
+    startTimer(); loadQ();
 }
 
-function tick() {
-    timeLeft--;
-    let m = Math.floor(timeLeft/60), s = timeLeft%60;
-    document.getElementById('timer').innerText = `${m}:${s<10?'0':''}${s}`;
-    if(timeLeft <= 0) location.reload();
-}
-
-function render() {
-    isChecking = false;
-    const q = questions[currentIdx];
-    document.getElementById('q-text').innerText = q.q;
-    document.getElementById('s-rem').innerText = questions.length;
-    document.getElementById('btn-main').innerText = "Confirmă";
-    document.getElementById('btn-later').style.display = "block";
-    const container = document.getElementById('q-container');
-    if(q.img) { container.classList.add('has-image'); document.getElementById('img-wrap').innerHTML = `<img src="${q.img}">`; }
-    else { container.classList.remove('has-image'); document.getElementById('img-wrap').innerHTML = ""; }
-    const area = document.getElementById('opts-list');
-    area.innerHTML = '';
-    ['A','B','C'].forEach(l => {
-        if(q[l.toLowerCase()]) {
-            const b = document.createElement('button');
-            b.className = 'opt-btn';
-            b.innerHTML = `<b>${l}:</b> ${q[l.toLowerCase()]}`;
-            b.onclick = () => { if(!isChecking) b.classList.toggle('active'); };
-            b.dataset.val = l;
-            area.appendChild(b);
-        }
-    });
-}
-
-function handleAction() { if(!isChecking) check(); else next(); }
-
-function check() {
-    const q = questions[currentIdx];
-    const sel = Array.from(document.querySelectorAll('.opt-btn.active')).map(b => b.dataset.val).sort().join('');
-    if(!sel) return;
-    isChecking = true;
-    document.querySelectorAll('.opt-btn').forEach(b => {
-        if(q.ans.includes(b.dataset.val)) b.classList.add('correct');
-        else if(b.classList.contains('active')) b.classList.add('wrong');
-    });
-    if(sel === q.ans.split('').sort().join('')) { 
-        score.c++; 
-    } 
-    else { 
-        score.g++; 
-        if(window.navigator.vibrate) window.navigator.vibrate(250); 
-    }
-    document.getElementById('s-cor').innerText = score.c;
-    document.getElementById('s-gre').innerText = score.g;
-    document.getElementById('s-perc').innerText = Math.round((score.c/26)*100) + "%";
-    document.getElementById('btn-main').innerText = "Următoarea";
-    document.getElementById('btn-later').style.display = "none";
+function loadQ() {
+    if(activePool.length === 0) { finalize(cor >= 22 ? "ADMIS" : "RESPINS"); return; }
+    isPaused = false;
+    const btn = document.getElementById('btn-main');
+    btn.innerText = "CONFIRMĂ";
+    btn.style.background = "var(--accent)";
     
-    // LOGICA 5 GRESELI
-    if(score.g >= 5) { 
-        clearInterval(timer);
-        alert("EXAMEN RESPINS!\nAi acumulat 5 greșeli.\nÎntrebări corecte realizate: " + score.c); 
-        location.reload(); 
-    }
+    sel = []; const q = activePool[0];
+    const imgWrap = document.getElementById('img-wrap');
+    if(q.img) { imgWrap.innerHTML = `<img src="${q.img}">`; imgWrap.style.display = "block"; }
+    else { imgWrap.style.display = "none"; }
+    
+    document.getElementById('q-text').innerText = (27 - activePool.length) + ". " + q.q;
+    const list = document.getElementById('opts-list'); list.innerHTML = "";
+    ['A','B','C'].forEach(l => {
+        let b = document.createElement('button'); b.className = "opt-btn";
+        b.innerText = l + ": " + q[l.toLowerCase()];
+        b.onclick = () => { if(isPaused) return; b.classList.toggle('selected'); if(sel.includes(l)) sel = sel.filter(x => x !== l); else sel.push(l); };
+        list.appendChild(b);
+    });
 }
 
-function next() {
-    questions.splice(currentIdx, 1);
-    if(questions.length === 0) { 
-        alert("EXAMEN FINALIZAT!\nRezultat: " + (score.c >= 22 ? "ADMIS" : "RESPINS") + "\nScor final: " + score.c + " puncte."); 
-        location.reload(); 
+function handleAction() {
+    const btn = document.getElementById('btn-main');
+    
+    if(isPaused) {
+        activePool.shift(); updateStats(); loadQ();
+        return;
     }
-    if(currentIdx >= questions.length) currentIdx = 0;
-    render();
+
+    if(sel.length === 0) return alert("Alege un răspuns!");
+
+    const q = activePool[0]; const pAns = sel.sort().join(""); const isOk = pAns === q.ans;
+    
+    document.querySelectorAll('.opt-btn').forEach(b => {
+        const l = b.innerText.charAt(0);
+        if(q.ans.includes(l)) b.classList.add('correct');
+        else if(sel.includes(l)) b.classList.add('wrong');
+        b.style.pointerEvents = "none";
+    });
+
+    if(!isOk) {
+        gre++; examHistory.push({q: q.q, r: pAns, c: q.ans});
+        if(gre >= 5) { setTimeout(() => finalize("RESPINS! 5 GREȘELI."), 1500); return; }
+    } else cor++;
+
+    isPaused = true;
+    btn.innerText = "MAI DEPARTE";
+    btn.style.background = "var(--success)";
 }
 
-function later() {
-    const item = questions.splice(currentIdx, 1);
-    questions.push(item[0]);
-    render();
+function later() { if(isPaused) return; if(activePool.length > 1) { activePool.push(activePool.shift()); loadQ(); } }
+
+function updateStats() {
+    document.getElementById('s-rem').innerText = activePool.length;
+    document.getElementById('s-cor').innerText = cor; document.getElementById('s-gre').innerText = gre;
+    document.getElementById('s-perc').innerText = Math.round((cor/26)*100) + "%";
+}
+
+function startTimer() {
+    let t = 1800; timer = setInterval(() => {
+        let m = Math.floor(t/60), s = t%60;
+        document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+        if(t-- <= 0) finalize("TIMP EXPIRAT!");
+    }, 1000);
+}
+
+function finalize(m) {
+    clearInterval(timer);
+    let db = JSON.parse(localStorage.getItem('gami_db') || "[]");
+    db.push({ nume: studentName, scor: cor, greseli: examHistory, data: new Date().toLocaleString(), timp: document.getElementById('timer').innerText });
+    localStorage.setItem('gami_db', JSON.stringify(db));
+    alert(m + "\nScor final: " + cor); location.reload();
+}
+
+function showAdmin() {
+    document.getElementById('screen-login').classList.add('hidden');
+    document.getElementById('screen-admin').classList.remove('hidden');
+    const data = JSON.parse(localStorage.getItem('gami_db') || "[]");
+    const container = document.getElementById('admin-grouped-content');
+    const grupuri = {};
+    data.forEach(r => { if (!grupuri[r.nume]) grupuri[r.nume] = { nume: r.nume, teste: [], suma: 0 }; grupuri[r.nume].teste.push(r); grupuri[r.nume].suma += r.scor; });
+    container.innerHTML = Object.values(grupuri).map(e => {
+        let procent = Math.round((e.suma / (e.teste.length * 26)) * 100);
+        return `<div class="admin-card-group"><div style="display:flex; align-items:center;"><div><b>${e.nume}</b><br><small>${e.teste.length} teste</small><br><button class="btn-delete" style="background:red; color:white; border:none; padding:5px; border-radius:5px;" onclick="stergeElev('${e.nume}')">ȘTERGE</button></div><div class="stats-circle">${procent}%</div></div><details><summary>Vezi Istoric</summary>${e.teste.reverse().map(t => `<div style="background:#0f172a; padding:10px; margin-top:5px; border-radius:8px;">${t.data} | Scor: ${t.scor}/26<details><summary>Greșeli</summary>${t.greseli.map(g => `<p style="font-size:11px">Î: ${g.q}<br><span style="color:red">Dat: ${g.r}</span> | <span style="color:green">Corect: ${g.c}</span></p>`).join('')}</details></div>`).join('')}</details></div>`;
+    }).join('') || "Fără date.";
+}
+
+function stergeElev(nume) { if(confirm(`Ștergi istoricul pentru ${nume}?`)) { let db = JSON.parse(localStorage.getItem('gami_db') || "[]"); localStorage.setItem('gami_db', JSON.stringify(db.filter(r => r.nume !== nume))); showAdmin(); } }
+
+function saveExtraQ() {
+    const q = document.getElementById('adm-q').value, a = document.getElementById('adm-a').value, b = document.getElementById('adm-b').value, c = document.getElementById('adm-c').value, ans = document.getElementById('adm-ans').value.toUpperCase();
+    const str = JSON.stringify({ q, a, b, c, ans }, null, 4) + ",";
+    const blob = new Blob([str], { type: 'text/plain' });
+    const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = "intrebare.txt"; link.click();
 }
 </script>
 </body>
