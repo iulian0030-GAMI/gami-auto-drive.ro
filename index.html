@@ -44,7 +44,6 @@
         .btn { padding: 16px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; flex: 1; text-transform: uppercase; font-size: 11px; }
         .btn-confirm { background: var(--primary); color: white; }
 
-        /* ADMIN STYLE */
         .admin-card-stu { background: white; color: #1e293b; border-radius: 20px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; position: relative; border: 1px solid #e2e8f0; }
         .results-grid { display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0; justify-content: center; }
         .score-circle { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; cursor: pointer; border: 2px solid transparent; }
@@ -90,14 +89,11 @@
 
 <div id="screen-admin" class="hidden" style="padding:20px; padding-bottom:100px;">
     <h2 style="color:var(--primary); text-align:center;">📊 CONTROL PANEL</h2>
-    
-    <!-- ZONA MODIFICARE CODURI (REINTEGRATA) -->
     <div style="background: white; padding: 15px; border-radius: 15px; margin-bottom: 25px; border-left: 4px solid var(--primary); display: flex; gap: 10px; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <input type="text" id="new-adm-code" placeholder="Cod Admin" class="input-style" style="margin-bottom:0; font-size:12px;">
         <input type="text" id="new-stu-code" placeholder="Cod Elev" class="input-style" style="margin-bottom:0; font-size:12px;">
         <button class="btn btn-confirm" onclick="updateCloudCodes()" style="padding:10px; font-size:10px; flex: 0.6;">SALVEAZĂ</button>
     </div>
-
     <div id="admin-grouped-content"></div>
     <button class="btn btn-confirm" style="position:fixed; bottom:20px; left:5%; width:90%; z-index:1000;" onclick="location.reload()">IEȘIRE ADMIN</button>
 </div>
@@ -165,7 +161,13 @@ async function auth() {
 }
 
 function loadQ() {
-    if(activePool.length === 0) { finalize(cor >= 22 ? "ADMIS" : "RESPINS"); return; }
+    if(activePool.length === 0) { 
+        const m = cor >= 22 ? 
+            `✅ ADMIS! ✅\n\nSCOR FINAL: ${cor}` : 
+            `❌ RESPINS! ❌\n\nSCOR FINAL: ${cor}`;
+        finalize(m); 
+        return; 
+    }
     isPaused = false; sel = [];
     const btn = document.getElementById('btn-main'), q = activePool[0], imgWrap = document.getElementById('img-wrap');
     btn.innerText = "CONFIRMĂ"; btn.style.background = "var(--primary)";
@@ -191,7 +193,10 @@ function handleAction() {
     });
     if(!isOk) { 
         gre++; triggerError('q-card-main'); examHistory.push({q: q.q, r: pAns, c: cAns}); 
-        if(gre >= 5) { setTimeout(() => finalize("RESPINS!"), 500); return; } 
+        if(gre >= 5) { 
+            setTimeout(() => finalize(`❌ RESPINS! ❌\n\nAI ACUMULAT 5 GREȘELI.\nAI AVUT ${cor} RĂSPUNSURI CORECTE.`), 500); 
+            return; 
+        } 
     } else { cor++; }
     isPaused = true; document.getElementById('btn-main').innerText = "MAI DEPARTE"; document.getElementById('btn-main').style.background = "var(--success)";
     updateStats();
@@ -199,7 +204,7 @@ function handleAction() {
 
 function later() { if(!isPaused && activePool.length > 1) { activePool.push(activePool.shift()); loadQ(); } }
 function updateStats() { document.getElementById('s-rem').innerText = activePool.length; document.getElementById('s-cor').innerText = cor; document.getElementById('s-gre').innerText = gre; document.getElementById('s-perc').innerText = Math.round((cor/totalQ)*100) + "%"; }
-function startTimer() { let t = 1800; timer = setInterval(() => { let m = Math.floor(t/60), s = t%60; document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`; if(t-- <= 0) finalize("TIMP EXPIRAT!"); }, 1000); }
+function startTimer() { let t = 1800; timer = setInterval(() => { let m = Math.floor(t/60), s = t%60; document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`; if(t-- <= 0) finalize(`❌ TIMP EXPIRAT! ❌\n\nRESPINS. SCOR FINAL: ${cor}`); }, 1000); }
 
 async function finalize(m) { 
     clearInterval(timer); 
@@ -211,24 +216,19 @@ async function showAdmin() {
     document.getElementById('screen-login').classList.add('hidden');
     document.getElementById('screen-admin').classList.remove('hidden');
     const s = await fetchSettings(), raw = await fetchRawExams(), container = document.getElementById('admin-grouped-content');
-    
-    // Completăm inputurile cu codurile actuale
     document.getElementById('new-adm-code').value = s.adminCode;
     document.getElementById('new-stu-code').value = s.studentCode;
-
     if(!raw) return;
     const examsWithKeys = Object.keys(raw).map(key => ({...raw[key], fbKey: key}));
     globalExamsData = examsWithKeys;
     const groups = {}; examsWithKeys.forEach(r => { if(!groups[r.nume]) groups[r.nume] = {n: r.nume, t: []}; groups[r.nume].t.push(r); });
-    
     container.innerHTML = Object.values(groups).map(e => {
         const ad = e.t.filter(x => x.scor >= 22).length, pr = ((ad/e.t.length)*100).toFixed(0), med = (e.t.reduce((a,b)=>a+b.scor,0)/e.t.length).toFixed(1);
         const sID = e.n.replace(/\s/g, ''), medTimpMin = Math.round(e.t.reduce((a,b) => {
             let p = b.timp.split(':');
-            let secRamas = (parseInt(p)*60) + parseInt(p);
+            let secRamas = (parseInt(p[0])*60) + parseInt(p[1]);
             return a + (1800 - secRamas);
         }, 0) / e.t.length / 60);
-
         return `<div class="admin-card-stu">
             <button style="position:absolute; top:10px; right:10px; background:none; border:none; color:red; font-weight:bold; cursor:pointer;" onclick="deleteStudent('${e.n}')">✕</button>
             <div style="font-weight:bold; color:var(--primary); font-size:18px;">${e.n}</div>
