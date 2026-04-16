@@ -106,7 +106,21 @@ const DB_URL = "https://gami-auto-drive-default-rtdb.europe-west1.firebasedataba
 let initialPool = [], cor = 0, gre = 0, sel = [], examHistory = [], timer, studentName = "", activePool = [], isPaused = false;let qIndex = 0;
 let globalExamsData = [];
 const totalQ = 26;
-
+const ALLOWED_CATEGORIES = [
+  "autostrazi",
+  "depasire",
+  "oprire",
+  "stationare",
+  "semafoare",
+  "ferata",
+  "preventiva",
+  "marcaje",
+  "indicatoare",
+  "viteza",
+  "giratoriu",
+  "prioritate",
+  "drum"
+];
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playClick() {
     if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -193,82 +207,103 @@ async function auth() {
 
     const imgAll = p.filter(x => norm(x.cat).includes("imagini"));
     const nonImg = p.filter(x => !norm(x.cat).includes("imagini"));
+let final = [];
 
-    let final = [];
+// 🔒 FIXE (NU INTRĂ ÎN RANDOM)
+const infr = nonImg.filter(x => norm(x.cat).includes("inf"));
+const contr = nonImg.filter(x => norm(x.cat).includes("cont"));
+const mec = nonImg.filter(x => norm(x.cat).includes("mec"));
+const prim = nonImg.filter(x => norm(x.cat).includes("prim"));
 
-    // ==================
-    // 🔥 IMAGINI (FĂRĂ REPETARE)
-    // ==================
+// 🎯 RANDOM DOAR DIN ASTEA
+const randomPool = nonImg.filter(x => {
+    const c = norm(x.cat);
+    return (
+        c.includes("aut") ||
+        c.includes("dep") ||
+        c.includes("opr") || c.includes("stat") ||
+        c.includes("sem") ||
+        c.includes("fer") ||
+        c.includes("prev") ||
+        c.includes("marc") ||
+        c.includes("ind") ||
+        c.includes("prior") || c.includes("gir") ||
+        c.includes("vite") || c.includes("drum")
+    );
+});
 
-    let usedGlobal = await loadUsed();
+// 🔥 IMAGINI (10)
+let usedGlobal = await loadUsed();
+let freshImg = imgAll.filter(x => !usedGlobal.includes(x.id));
 
-    let freshImg = imgAll.filter(x => !usedGlobal.includes(x.id));
+if (freshImg.length < 10) {
+    usedGlobal = [];
+    freshImg = imgAll;
+}
 
-    if (freshImg.length < 10) {
-        usedGlobal = [];
-        freshImg = imgAll;
+let selectedImg = pick(freshImg, 10);
+usedGlobal.push(...selectedImg.map(x => x.id));
+await saveUsed(usedGlobal);
+
+final.push(...selectedImg);
+
+// 🔥 FIXE
+final.push(...pick(mec.length ? mec : nonImg, 2));
+final.push(...pick(prim.length ? prim : nonImg, 1));
+final.push(...pick(contr.length ? contr : nonImg, 2));
+final.push(...pick(infr.length ? infr : nonImg, 1));
+
+// 🔥 RANDOM (COMPLETARE PÂNĂ LA 26)
+let remaining = randomPool.filter(x => !final.some(f => f.id === x.id));
+final.push(...pick(remaining, 26 - final.length));
+
+// 🔥 ELIMINARE DUPLICATE
+final = final.filter((v, i, a) => a.findIndex(x => x.id === v.id) === i);
+
+// 🔥 FIX RĂSPUNSURI (EXACT CERINȚA TA)
+const countAns = q => q.ans.replace(/\s/g, '').length;
+
+// scoate toate 2 și 3
+let keep2 = [];
+let keep3 = null;
+
+final = final.filter(q => {
+    let c = countAns(q);
+
+    if (c === 2 && keep2.length < 2) {
+        keep2.push(q);
+        return false;
     }
 
-    let selectedImg = pick(freshImg, 10);
+    if (c === 3 && !keep3) {
+        keep3 = q;
+        return false;
+    }
 
-    usedGlobal.push(...selectedImg.map(x => x.id));
-    await saveUsed(usedGlobal);
+    return c !== 2 && c !== 3;
+});
 
-    final.push(...selectedImg);
+// adaugă fix cerința
+if (keep2.length < 2) {
+    let extra = nonImg.filter(x => countAns(x) === 2 && !final.some(f => f.id === x.id));
+    keep2.push(...pick(extra, 2 - keep2.length));
+}
 
-    // ==================
-    // 🔥 CATEGORII OBLIGATORII
-    // ==================
+if (!keep3) {
+    keep3 = nonImg.find(x => countAns(x) === 3 && !final.some(f => f.id === x.id));
+}
 
-    const infr = nonImg.filter(x => norm(x.cat).includes("inf"));
-    const contr = nonImg.filter(x => norm(x.cat).includes("cont"));
-    const mec = nonImg.filter(x => norm(x.cat).includes("mec"));
-    const marc = nonImg.filter(x => norm(x.cat).includes("marc"));
-    const prim = nonImg.filter(x => norm(x.cat).includes("prim"));
+if (keep3) final.push(keep3);
 
-    final.push(...pick(infr.length ? infr : nonImg, 1));
-    final.push(...pick(contr.length ? contr : nonImg, 2));
-    final.push(...pick(mec.length ? mec : nonImg, 2));
-    final.push(...pick(marc.length ? marc : nonImg, 1));
-    final.push(...pick(prim.length ? prim : nonImg, 1));
-
-    // ==================
-    // 🔥 ELIMINARE DUPLICATE
-    // ==================
-
-    final = final.filter((v, i, a) => a.indexOf(v) === i);
-
-    // ==================
-    // 🔥 COMPLETARE PÂNĂ LA 26 (FĂRĂ IMAGINI)
-    // ==================
-
+// 🔥 FINAL
+final = shuffle(final).slice(0, 26);
     if (final.length < 26) {
-        let remaining = nonImg.filter(x => !final.includes(x));
-        final.push(...pick(remaining, 26 - final.length));
-    }
-
-    // ==================
-    // 🔥 TIPURI RĂSPUNSURI
-    // ==================
-
-    const countAns = (q) => q.ans.replace(/\s/g, '').length;
-
-    let count3 = final.filter(x => countAns(x) === 3).length;
-    let count2 = final.filter(x => countAns(x) === 2).length;
-
-    if (count3 < 1) {
-        let extra = nonImg.filter(x => countAns(x) === 3 && !final.includes(x));
-        if (extra.length) final.push(extra[Math.floor(Math.random() * extra.length)]);
-    }
-
-    if (count2 < 2) {
-        let extra = nonImg.filter(x => countAns(x) === 2 && !final.includes(x));
-        final.push(...pick(extra, 2 - count2));
-    }
-
-    // ==================
-    // 🔥 FINAL
-    // ==================
+    let remaining = nonImg.filter(x => {
+    const c = norm(x.cat);
+    return ALLOWED_CATEGORIES.some(k => c.includes(k)) && !final.some(f => f.id === x.id);
+});
+    final.push(...pick(remaining, 26 - final.length));
+}
 
     final = shuffle(final).slice(0, 26);
 
