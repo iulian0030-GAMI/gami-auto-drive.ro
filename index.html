@@ -59,8 +59,9 @@
 <div id="screen-login" class="login-screen">
     <div id="login-card" class="login-card">
         <h1 style="color:var(--primary)">GAMI DRIVE</h1>
-        <input type="text" id="stu-name" placeholder="Nume Cursant" class="input-style">
-        <input type="password" id="stu-code" placeholder="Cod Acces" class="input-style">
+       <input type="text" id="stu-name" placeholder="Cursant / Instructor" class="input-style">
+       <input type="password" id="stu-code" placeholder="Cod Acces" class="input-style">
+       <input type="password" id="admin-code" placeholder="Admin" class="input-style">
         <button class="btn btn-confirm" style="width:100%" onclick="playClick(); auth()">CONECTARE</button>
     </div>
 </div>
@@ -93,17 +94,21 @@
         <h2 style="color:var(--primary); margin:0;">📊 CONTROL PANEL</h2>
         <button class="btn btn-confirm" onclick="addNewAccount()" style="border-radius:50%; width:45px; height:45px; font-size:24px; flex:none;">+</button>
     </div>
-    <div style="background: white; padding: 15px; border-radius: 15px; margin-bottom: 25px; border-left: 4px solid var(--primary); display: flex; gap: 10px; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+    <div id="admin-code-box">
+    <div style="background: white; padding: 15px; border-radius: 15px; margin-bottom: 25px; border-left: 4px solid var(--primary); display: flex;">
         <input type="text" id="new-adm-code" placeholder="Cod Nou Admin" class="input-style" style="margin-bottom:0; font-size:12px;">
         <button class="btn btn-confirm" onclick="updateCloudCodes()" style="padding:10px; font-size:10px; flex: 0.6;">SALVEAZĂ</button>
     </div>
+</div>
     <div id="admin-grouped-content"></div>
     <button class="btn btn-confirm" style="position:fixed; bottom:20px; left:5%; width:90%; z-index:1000;" onclick="location.reload()">IEȘIRE ADMIN</button>
 </div>
 
 <script>
-const DB_URL = "https://gami-auto-drive-default-rtdb.europe-west1.firebasedatabase.app/";
+const DB_URL = "https://gamiautodrive-default-rtdb.europe-west1.firebasedatabase.app/";
 let initialPool = [], cor = 0, gre = 0, sel = [], examHistory = [], timer, studentName = "", activePool = [], isPaused = false;let qIndex = 0;
+let isBoss = false;
+let currentInstructor = "";
 let globalExamsData = [];
 const totalQ = 26;
 const ALLOWED_CATEGORIES = [
@@ -187,8 +192,14 @@ async function auth() {
     const name = document.getElementById('stu-name').value.trim(),
           code = document.getElementById('stu-code').value.trim(),
           s = await fetchSettings();
+     const instructorCode = document.getElementById('admin-code')?.value.trim();
 
-    if(code === s.adminCode) { showAdmin(); return; }
+if(instructorCode === "999") {
+    isBoss = true;
+    alert("ADMIN BOSS");
+    showAdmin();
+    return;
+}
 
     const accs = await fetchAccounts();
     const found = Object.values(accs).find(x => x.u === name && x.p === code);
@@ -197,6 +208,10 @@ async function auth() {
         alert("Date incorecte!"); 
         return; 
     }
+isBoss = false;
+currentInstructor = found.u;
+showAdmin();
+return;
 
     const ok = await fetchQuestions();
     if(!ok) return alert("Eroare date!");
@@ -366,51 +381,124 @@ async function finalize(m) { clearInterval(timer); await syncExamToCloud({ nume:
 async function showAdmin() {
     document.getElementById('screen-login').classList.add('hidden');
     document.getElementById('screen-admin').classList.remove('hidden');
-    loadAdminList();
+    if (!isBoss) {
+    document.getElementById('new-adm-code').style.display = 'none';
+    document.querySelector('button[onclick="updateCloudCodes()"]').style.display = 'none';
 }
+    const exitBtn = document.querySelector('button[onclick="location.reload()"]');
+
+if (exitBtn) {
+    exitBtn.innerText = isBoss ? "IEȘIRE ADMIN" : "IEȘIRE INSTRUCTOR";
+}
+if (!isBoss) document.querySelector('input[placeholder="Cod Nou Admin"]').closest('div').style.display = 'none';}
 
 async function loadAdminList() {
-    const rawEx = await fetchRawExams(), rawAc = await fetchAccounts(), container = document.getElementById('admin-grouped-content');
-    globalExamsData = rawEx ? Object.keys(rawEx).map(k => ({...rawEx[k], fbKey: k})) : [];
-    container.innerHTML = Object.keys(rawAc).map(id => {
-        const acc = rawAc[id], sKey = acc.u.replace(/\s/g, ''), t = globalExamsData.filter(x => x.nume === acc.u);
-        const ad = t.filter(x => x.scor >= 22).length, pr = t.length ? ((ad/t.length)*100).toFixed(0) : 0, med = t.length ? (t.reduce((a,b)=>a+b.scor,0)/t.length).toFixed(1) : 0;
-        return `<div class="admin-card-stu">
-            <button style="position:absolute; top:10px; right:10px; background:none; border:none; color:red; cursor:pointer;" onclick="deleteAcc('${id}', '${acc.u}')">✕</button>
-            <div style="cursor:pointer;" onclick="document.getElementById('ist-${sKey}').classList.toggle('hidden')">
-                <div style="font-weight:bold; color:var(--primary); font-size:18px;">${acc.u}</div>
-                <div style="font-size:10px; color:#64748b;">Parolă: ${acc.p} | Click pt. monitorizare</div>
+    const rawAc = await fetchAccounts();
+    const container = document.getElementById('admin-grouped-content');
+
+    let html = '';
+
+    // 🔥 ia toți instructorii (fără owner)
+    const instructors = Object.entries(rawAc || {}).filter(([id, acc]) => !acc.owner);
+
+    instructors.forEach(([instId, inst], index) => {
+
+        // elevii lui
+        const students = Object.entries(rawAc).filter(([id, acc]) => acc.owner === inst.u);
+
+        html += `
+        <div style="padding:15px; border:1px solid #ddd; border-radius:10px; margin-bottom:10px;">
+            
+            <div style="font-weight:bold; cursor:pointer;" onclick="toggleList('list-${index}')">
+                ${inst.u}
             </div>
-            <div id="ist-${sKey}" class="hidden">
-                <div class="results-grid" style="margin-top:10px;">${t.map((ex, i) => `<div class="score-circle ${ex.scor < 22 ? 'circle-fail' : 'circle-pass'}" onclick="toggleDetails('${sKey}', ${i}, '${acc.u}')">${ex.scor}</div>`).join('')}</div>
-                <div class="gauges-row">
-                    <div class="gauge-col"><div class="gauge-visual">${med}</div><small>Media</small></div>
-                    <div class="gauge-col"><div class="gauge-visual">${t.length}</div><small>Teste</small></div>
-                    <div class="gauge-col"><div class="gauge-visual" style="color:var(--success)">${pr}%</div><small>Admis</small></div>
-                </div>
-                <div id="err-${sKey}" class="hidden" style="margin-top:10px; text-align:left; background:#f8fafc; padding:10px; border-radius:10px; border-top:1px solid #eee;"></div>
+
+            <div style="font-size:12px;">Elevi: ${students.length}</div>
+
+            <div id="list-${index}" style="display:none; margin-top:10px;">
+                ${students.map(([id, s]) => `
+                    <div style="padding:5px; border-bottom:1px solid #eee;">
+                        ${s.u} / ${s.p}
+                        <button onclick="deleteAcc('${id}', '${s.u}')" style="float:right;color:red;border:none;background:none;"🗑️</button>
+                    </div>
+                `).join('')}
             </div>
-        </div>`;
-    }).join('');
+
+        </div>
+        `;
+    });
+
+    container.innerHTML = html;
 }
 
 async function addNewAccount() {
-    const u = prompt("Nume:"), p = prompt("Parolă:");
-    if(u && p) { await fetch(`${DB_URL}accounts.json`, { method: 'POST', body: JSON.stringify({ u: u, p: p }) }); loadAdminList(); }
-}
+    const u = prompt("Nume:");
+    const p = prompt("Parola:");
 
-async function deleteAcc(id, name) {
-    if(!confirm(`Ștergi elevul ${name}?`)) return;
-    await fetch(`${DB_URL}accounts/${id}.json`, { method: 'DELETE' });
-    const toDel = globalExamsData.filter(x => x.nume === name);
-    for(let it of toDel) await fetch(`${DB_URL}exams/${it.fbKey}.json`, { method: 'DELETE' });
-    loadAdminList();
-}
+    if (u && p) {
 
+        // 🔴 dacă e ADMIN → creează instructor
+        if (isBoss) {
+            await fetch(`${DB_URL}accounts.json`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    u: u,
+                    p: p
+                })
+            });
+        }
+
+        // 🔴 dacă e INSTRUCTOR → creează elev
+        else {
+            await fetch(`${DB_URL}accounts.json`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    u: u,
+                    p: p,
+                    owner: currentInstructor
+                })
+            });
+        }
+
+        loadAdminList();
+    }
+}
 async function updateCloudCodes() { 
     const a = document.getElementById('new-adm-code').value; 
     await fetch(`${DB_URL}settings.json`, { method: 'PUT', body: JSON.stringify({ adminCode: a }) }); 
     alert("Salvat!"); 
+}
+function toggleList(id) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+}
+async function deleteAcc(id, name) {
+
+    if (!confirm("Sigur vrei să ștergi " + name + "?")) return;
+
+    const rawAc = await fetchAccounts();
+
+    const acc = rawAc[id];
+
+    // 🔴 dacă e instructor → șterge și elevii lui
+    if (!acc.owner) {
+        for (let key in rawAc) {
+            if (rawAc[key].owner === acc.u) {
+                await fetch(`${DB_URL}accounts/${key}.json`, {
+                    method: 'DELETE'
+                });
+            }
+        }
+    }
+
+    // 🔴 șterge contul
+    await fetch(`${DB_URL}accounts/${id}.json`, {
+        method: 'DELETE'
+    });
+
+    loadAdminList();
 }
 
 function toggleDetails(sID, idx, realName) {
