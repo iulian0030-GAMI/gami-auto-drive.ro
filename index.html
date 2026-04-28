@@ -85,9 +85,27 @@
 <div id="screen-login" class="login-screen">
     <div id="login-card" class="login-card">
         <h1 style="color:var(--primary)">GAMI DRIVE</h1>
-        <input type="text" id="stu-name" placeholder="Nume Cursant" class="input-style">
-        <input type="password" id="stu-code" placeholder="Cod Acces" class="input-style">
-        <button class="btn btn-confirm" style="width:100%" onclick="playClick(); auth()">CONECTARE</button>
+        <form id="login-form" onsubmit="playClick(); auth(); return false;">
+
+    <input type="text"
+    id="stu-name"
+    placeholder="Nume Cursant"
+    class="input-style"
+    autocomplete="username"
+    name="username">
+
+    <input type="password"
+    id="stu-code"
+    placeholder="Cod Acces"
+    class="input-style"
+    autocomplete="current-password"
+    name="password">
+
+    <button class="btn btn-confirm" style="width:100%">
+        CONECTARE
+    </button>
+
+</form>
     </div>
 </div>
 
