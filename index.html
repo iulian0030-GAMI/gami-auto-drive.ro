@@ -5,6 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>GAMI AUTO DRIVE - PRO CLOUD</title>
+<link rel="icon" href="icon.png">
+
+<link rel="apple-touch-icon" href="icon.png">
+
+<meta name="theme-color" content="#1e3a8a">
+<link rel="manifest" href="manifest.json">
     <style>
         :root {
             --primary: #1e3a8a; --accent: #fbbf24; --success: #22c55e;
@@ -52,10 +58,32 @@
         .circle-fail { background: var(--danger); color: white; }
         .gauges-row { display: flex; justify-content: space-around; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e2e8f0; }
         .gauge-visual { width: 50px; height: 50px; border-radius: 50%; border: 4px solid #f1f5f9; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; margin-bottom: 5px; }
+       #splash-screen {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: #1e3a8a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+#splash-screen img {
+    width: 150px;
+    animation: zoomIn 0.6s ease;
+}
+
+@keyframes zoomIn {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+} 
     </style>
 </head>
 <body>
-
+<div id="splash-screen">
+    <img src="icon.png" alt="logo">
+</div>
 <div id="screen-login" class="login-screen">
     <div id="login-card" class="login-card">
         <h1 style="color:var(--primary)">GAMI DRIVE</h1>
@@ -419,6 +447,18 @@ function toggleDetails(sID, idx, realName) {
     else box.innerHTML = ex.detaliiGresele.map(g => `<div style="padding:5px; border-bottom:1px solid #eee; text-align:left; font-size:11px;"><b>Q:</b> ${g.q}<br><span style="color:red">R: ${g.r}</span> | <span style="color:green">C: ${g.c}</span></div>`).join('');
     box.classList.toggle('hidden');
 }
+window.addEventListener("load", () => {
+    setTimeout(() => {
+        const splash = document.getElementById("splash-screen");
+        splash.style.opacity = "0";
+        splash.style.transition = "0.5s";
+
+        setTimeout(() => {
+            splash.style.display = "none";
+        }, 500);
+
+    }, 2000);
+});
 </script>
 </body>
 </html>
