@@ -463,17 +463,18 @@ function toggleDetails(sID, idx, realName) {
     else box.innerHTML = ex.detaliiGresele.map(g => `<div style="padding:5px; border-bottom:1px solid #eee; text-align:left; font-size:11px;"><b>Q:</b> ${g.q}<br><span style="color:red">R: ${g.r}</span> | <span style="color:green">C: ${g.c}</span></div>`).join('');
     box.classList.toggle('hidden');
 }
-window.addEventListener("load", () => {
+document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
         const splash = document.getElementById("splash-screen");
-        splash.style.opacity = "0";
+
         splash.style.transition = "0.5s";
+        splash.style.opacity = "0";
 
         setTimeout(() => {
             splash.style.display = "none";
         }, 500);
 
-    }, 4000);
+    }, 2500);
 });
 </script>
 </body>
