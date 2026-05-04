@@ -250,7 +250,7 @@ async function auth() {
 
     const p = initialPool.filter(x => x && x.q && x.a && x.b && x.c && x.ans);
 
-    const norm = (txt) => txt?.toLowerCase().trim();
+    const norm = (txt) => (txt || "").toLowerCase().trim();
 
     const imgAll = p.filter(x => norm(x.cat).includes("imagini"));
     const nonImg = p.filter(x => !norm(x.cat).includes("imagini"));
@@ -366,7 +366,7 @@ function loadQ() {
     btn.innerText = "CONFIRMĂ"; btn.style.background = "var(--primary)";
     if(q.img && q.img !== "") { imgWrap.innerHTML = `<img src="${q.img}">`; imgWrap.style.display = "block"; } else { imgWrap.style.display = "none"; }
     qIndex++;
-qIndex++;
+
 document.getElementById('q-text').innerText = qIndex + ". " + q.q;
     const list = document.getElementById('opts-list'); list.innerHTML = "";
     ['A','B','C'].forEach(l => {
